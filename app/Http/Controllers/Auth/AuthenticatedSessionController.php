@@ -28,7 +28,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        // After login, if there was an intended URL use it; otherwise return to the public portal (home)
+        return redirect()->intended(route('welcome'));
     }
 
     /**

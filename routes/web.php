@@ -8,9 +8,7 @@ use App\Http\Controllers\ArchivoController;
 use Illuminate\Support\Facades\Route;
 
 // 1. RUTA PÚBLICA: El portal principal que todos ven
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+Route::get('/', [DocumentoController::class, 'index'])->name('welcome');
 
 Route::get('/documentos', [DocumentoController::class, 'index'])->name('documentos.index');
 

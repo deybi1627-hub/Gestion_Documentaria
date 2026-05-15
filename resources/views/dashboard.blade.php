@@ -16,7 +16,11 @@
                             <h3 class="text-lg font-medium text-gray-900">Bienvenido, {{ Auth::user()->name }}</h3>
                             <p class="text-sm text-gray-600">Sistema de Gestión Documentaria y Mesa de Partes</p>
                         </div>
-                        <div class="flex space-x-3">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <a href="{{ url('/') }}"
+                               class="bg-slate-700 text-white px-4 py-2 rounded-md hover:bg-slate-800 text-sm">
+                                Regresar al Inicio
+                            </a>
                             <a href="{{ route('tramites.index') }}"
                                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
                                 Nuevo Trámite

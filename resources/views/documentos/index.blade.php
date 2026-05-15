@@ -53,9 +53,18 @@
                 <p class="text-lg leading-relaxed text-blue-50 mb-6 font-medium italic">
                     "Somos una institución que brinda formación inicial docente que promueve la investigación y la innovación para mejorar la práctica educativa..."
                 </p>
-                <div class="flex flex-wrap gap-4">
+                <div class="flex flex-wrap gap-4 mb-4">
                     <span class="bg-red-600 px-4 py-2 rounded-full text-sm font-bold shadow-lg tracking-tighter uppercase">Investigación</span>
                     <span class="bg-blue-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg tracking-tighter uppercase">Innovación</span>
+                </div>
+
+                <div class="flex flex-wrap gap-3 mt-4">
+                    <a href="{{ route('documentos.index') }}" class="bg-white text-blue-900 px-5 py-3 rounded-full font-bold shadow-md uppercase">Portal Documentos</a>
+                    <a href="{{ route('seguimiento.form') }}" class="bg-white/10 text-white border border-white/20 px-5 py-3 rounded-full font-bold uppercase">Seguimiento</a>
+                    <a href="{{ route('login') }}" class="bg-white/10 text-white border border-white/20 px-5 py-3 rounded-full font-bold uppercase">Ingresar</a>
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="bg-white text-blue-900 px-5 py-3 rounded-full font-bold shadow-md uppercase">Dashboard</a>
+                    @endauth
                 </div>
             </div>
             
