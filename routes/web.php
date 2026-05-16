@@ -5,11 +5,12 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TramiteController;
 use App\Http\Controllers\MovimientoFinancieroController;
 use App\Http\Controllers\ArchivoController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 // 1. RUTA PÚBLICA: El portal principal que todos ven
 Route::get('/', [DocumentoController::class, 'index'])->name('welcome');
-
+Route::get('/portal-documentos', [DocumentoController::class, 'portal'])->name('documentos.portal');
 Route::get('/documentos', [DocumentoController::class, 'index'])->name('documentos.index');
 
 // 2. SEGUIMIENTO PÚBLICO: Consulta de trámites por ciudadanos
@@ -20,9 +21,7 @@ Route::get('/seguimiento', function () {
 Route::post('/seguimiento', [TramiteController::class, 'seguimiento'])->name('seguimiento.buscar');
 
 // 3. DASHBOARD: La pantalla a la que entras al loguearte
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 // 4. RUTAS PROTEGIDAS: Solo usuarios logueados
 Route::middleware('auth')->group(function() {

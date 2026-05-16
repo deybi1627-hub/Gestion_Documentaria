@@ -26,14 +26,16 @@
             </div>
 
             <nav class="hidden lg:flex gap-8 text-sm font-bold text-slate-700 items-center">
-                <a href="{{ route('documentos.index') }}" class="hover:text-red-600 transition tracking-tighter uppercase">INICIO</a>
+                <a href="{{ url('/') }}" class="hover:text-red-600 transition tracking-tighter uppercase">INICIO</a>
+                <a href="{{ route('documentos.portal') }}" class="hover:text-red-600 transition tracking-tighter uppercase">DOCUMENTOS</a>
+                <a href="{{ route('seguimiento.form') }}" class="hover:text-red-600 transition tracking-tighter uppercase">SEGUIMIENTO</a>
                 <a href="https://teams.microsoft.com" target="_blank" class="hover:text-red-600 transition tracking-tighter uppercase font-black">PLATAFORMA EVA</a>
                 
                 @auth
-                    <a href="{{ route('documentos.create') }}" class="bg-blue-900 text-white px-5 py-2.5 rounded-xl hover:bg-blue-800 transition shadow-md tracking-tighter uppercase">Publicar</a>
+                    <a href="{{ route('dashboard') }}" class="bg-blue-900 text-white px-5 py-2.5 rounded-xl hover:bg-blue-800 transition shadow-md tracking-tighter uppercase">Panel de Control</a>
                     <form method="POST" action="{{ route('logout') }}" class="inline">
                         @csrf
-                        <button type="submit" class="text-red-600 hover:underline uppercase text-xs font-black">Cerrar Sesión</button>
+                        <button type="submit" class="text-red-600 hover:underline uppercase text-xs font-black ml-2">Cerrar Sesión</button>
                     </form>
                 @else
                     <a href="{{ route('login') }}" class="border border-blue-900 text-blue-900 px-5 py-2.5 rounded-xl hover:bg-blue-50 transition tracking-tighter uppercase flex items-center gap-2">
@@ -58,14 +60,6 @@
                     <span class="bg-blue-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg tracking-tighter uppercase">Innovación</span>
                 </div>
 
-                <div class="flex flex-wrap gap-3 mt-4">
-                    <a href="{{ route('documentos.index') }}" class="bg-white text-blue-900 px-5 py-3 rounded-full font-bold shadow-md uppercase">Portal Documentos</a>
-                    <a href="{{ route('seguimiento.form') }}" class="bg-white/10 text-white border border-white/20 px-5 py-3 rounded-full font-bold uppercase">Seguimiento</a>
-                    <a href="{{ route('login') }}" class="bg-white/10 text-white border border-white/20 px-5 py-3 rounded-full font-bold uppercase">Ingresar</a>
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="bg-white text-blue-900 px-5 py-3 rounded-full font-bold shadow-md uppercase">Dashboard</a>
-                    @endauth
-                </div>
             </div>
             
             <div class="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 shadow-2xl">
@@ -146,9 +140,13 @@
             @endforelse
         </div>
         
-        <div class="mt-8">
-            {{ $documentos->links() }}
-        </div>
+        @if($totalDocumentos > 3)
+            <div class="mt-12 text-center">
+                <a href="{{ route('documentos.portal') }}" class="inline-flex items-center gap-2 bg-red-600 text-white px-10 py-4 rounded-full font-black hover:bg-red-700 transition shadow-xl uppercase tracking-widest">
+                    Ver todos los documentos <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+            </div>
+        @endif
     </main>
 
     <footer class="bg-[#002147] text-white pt-16 pb-8 border-t-8 border-red-600">

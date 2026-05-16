@@ -74,31 +74,62 @@
             </div>
 
             <!-- Movimientos/Historial -->
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-100">
                 <div class="p-6">
-                    <h4 class="text-md font-medium text-gray-900 mb-4">Historial de Movimientos</h4>
-                    <div class="space-y-4">
-                        @forelse($tramite->movimientos as $movimiento)
-                        <div class="border-l-4 border-blue-500 pl-4 py-2">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">
-                                        {{ $movimiento->estado_anterior }} → {{ $movimiento->estado_nuevo }}
-                                    </p>
-                                    <p class="text-sm text-gray-600">{{ $movimiento->comentarios }}</p>
-                                    @if($movimiento->departamento_destino)
-                                    <p class="text-xs text-gray-500">Enviado a: {{ $movimiento->departamento_destino }}</p>
-                                    @endif
+                    <h4 class="text-lg font-bold text-gray-900 mb-6">Historial de Movimientos</h4>
+                    <div class="relative">
+                        <!-- Linea vertical -->
+                        <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-100"></div>
+
+                        <div class="space-y-8 relative">
+                            @forelse($tramite->movimientos as $movimiento)
+                            <div class="flex items-start">
+                                <!-- Punto de la linea -->
+                                <div class="relative flex items-center justify-center">
+                                    <div class="w-8 h-8 bg-brand-50 rounded-full border-2 border-white shadow-sm flex items-center justify-center z-10">
+                                        <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                                        </svg>
+                                    </div>
                                 </div>
-                                <div class="text-right text-xs text-gray-500">
-                                    <p>{{ $movimiento->fecha_movimiento->format('d/m/Y H:i') }}</p>
-                                    <p>por {{ $movimiento->user->name }}</p>
+                                
+                                <div class="ml-6 flex-1">
+                                    <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100 hover:border-brand-200 transition-colors">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-white text-brand-700 border border-brand-100 uppercase tracking-wider">
+                                                {{ $movimiento->estado_nuevo }}
+                                            </span>
+                                            <span class="text-xs font-medium text-gray-500 mt-1 sm:mt-0">
+                                                {{ $movimiento->fecha_movimiento->format('d/m/Y H:i') }}
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-gray-700 leading-relaxed">{{ $movimiento->comentarios }}</p>
+                                        
+                                        <div class="mt-3 flex items-center justify-between pt-3 border-t border-gray-200/50">
+                                            @if($movimiento->departamento_destino)
+                                            <div class="flex items-center text-xs text-gray-500">
+                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                                </svg>
+                                                <span>Destino: {{ $movimiento->departamento_destino }}</span>
+                                            </div>
+                                            @endif
+                                            <div class="flex items-center text-xs font-semibold text-gray-600 ml-auto">
+                                                <div class="w-5 h-5 bg-brand-100 rounded-full flex items-center justify-center mr-1.5 text-[10px] text-brand-700 uppercase">
+                                                    {{ substr($movimiento->user->name, 0, 1) }}
+                                                </div>
+                                                {{ $movimiento->user->name }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            @empty
+                            <div class="text-center py-6">
+                                <p class="text-gray-500 text-sm">No hay movimientos registrados</p>
+                            </div>
+                            @endforelse
                         </div>
-                        @empty
-                        <p class="text-gray-500 text-sm">No hay movimientos registrados</p>
-                        @endforelse
                     </div>
                 </div>
             </div>

@@ -13,6 +13,19 @@ class DocumentoController extends Controller
 
     public function index(Request $request)
     {
+        if (auth()->check()) {
+            return redirect()->route('dashboard');
+        }
+
+        // Para la landing, solo mostramos los últimos 3
+        $documentos = Documento::latest('fecha_publicacion')->take(3)->get();
+        $totalDocumentos = Documento::count();
+        
+        return view('documentos.index', compact('documentos', 'totalDocumentos'));
+    }
+
+    public function portal(Request $request)
+    {
         $query = Documento::query();
 
         if ($request->filled('search')) {
@@ -25,7 +38,7 @@ class DocumentoController extends Controller
 
         $documentos = $query->latest('fecha_publicacion')->paginate(25); 
         
-        return view('documentos.index', compact('documentos'));
+        return view('documentos.portal', compact('documentos'));
     }
 
     public function create()

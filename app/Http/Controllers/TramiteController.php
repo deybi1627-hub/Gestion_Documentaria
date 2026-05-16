@@ -106,20 +106,19 @@ class TramiteController extends Controller
     public function seguimiento(Request $request)
     {
         $request->validate([
-            'numero_expediente' => 'required|string',
-            'dni' => 'required|string|size:8'
+            'search' => 'required|string|min:3'
         ]);
 
-        $tramite = Tramite::where('numero_expediente', $request->numero_expediente)
-                         ->whereHas('user', function($query) use ($request) {
-                             // Aquí deberías verificar el DNI, pero como no tenemos DNI en users,
-                             // por ahora solo verificamos que el trámite existe
-                             $query->where('id', '>', 0); // Placeholder
+        $search = $request->search;
+
+        $tramite = Tramite::where('numero_expediente', 'like', "%{$search}%")
+                         ->orWhereHas('user', function($query) use ($search) {
+                             $query->where('name', 'like', "%{$search}%");
                          })
                          ->first();
 
         if (!$tramite) {
-            return back()->with('error', 'Trámite no encontrado o DNI incorrecto');
+            return back()->with('error', 'No se encontró ningún trámite con esos datos. Verifique su número de expediente o nombre.');
         }
 
         return view('tramites.seguimiento', compact('tramite'));
