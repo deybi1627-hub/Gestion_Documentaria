@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use App\Models\Tramite;
 use App\Models\ProcedimientoTupa;
 use App\Models\TramiteMovimiento;
@@ -14,14 +15,14 @@ class TramiteController extends Controller
 {
     public function index()
     {
-        $procedimientos = ProcedimientoTupa::where('activo', true)->get();
-        return view('tramite', compact('procedimientos'));
+        $tramites = Auth::user()->tramites()->with('procedimientoTupa')->latest()->paginate(10);
+        return view('tramites.index', compact('tramites'));
     }
 
     public function create(Request $request)
     {
-        $procedimiento = ProcedimientoTupa::findOrFail($request->procedimiento_id);
-        return view('tramites.create', compact('procedimiento'));
+        $procedimientos = ProcedimientoTupa::where('activo', true)->get();
+        return view('tramites.create', compact('procedimientos'));
     }
 
     public function store(Request $request)
@@ -29,13 +30,19 @@ class TramiteController extends Controller
         $request->validate([
             'procedimiento_tupa_id' => 'required|exists:procedimiento_tupas,id',
             'descripcion' => 'required|string|max:1000',
-            'documentos.*' => 'file|mimes:pdf,jpg,jpeg,png|max:2048'
+            'documentos' => 'required|array|min:1',
+            'documentos.*' => 'required|file|mimes:pdf|max:2048'
+        ], [
+            'documentos.required' => 'Debe adjuntar al menos un documento (Ej. su solicitud o DNI).',
+            'documentos.*.mimes' => 'Por seguridad, los documentos deben ser estrictamente archivos PDF.',
+            'documentos.*.max' => 'Cada documento no debe superar los 2MB.'
         ]);
 
         $procedimiento = ProcedimientoTupa::findOrFail($request->procedimiento_tupa_id);
 
         // Crear el trámite
         $tramite = Tramite::create([
+            'numero_expediente' => 'TEMP-' . time(), // Valor temporal para pasar la restricción de NOT NULL
             'user_id' => Auth::id(),
             'procedimiento_tupa_id' => $request->procedimiento_tupa_id,
             'estado' => 'Recibido',
@@ -54,7 +61,7 @@ class TramiteController extends Controller
         TramiteMovimiento::create([
             'tramite_id' => $tramite->id,
             'user_id' => Auth::id(),
-            'estado_anterior' => null,
+            'estado_anterior' => 'Inicial',
             'estado_nuevo' => 'Recibido',
             'comentarios' => 'Trámite recibido en Mesa de Partes',
             'fecha_movimiento' => now()
@@ -96,11 +103,47 @@ class TramiteController extends Controller
 
     public function show(Tramite $tramite)
     {
-        $this->authorize('view', $tramite);
+        Gate::authorize('view', $tramite);
 
         $tramite->load(['user', 'procedimientoTupa', 'movimientos.user', 'documentos', 'movimientosFinancieros']);
 
         return view('tramites.show', compact('tramite'));
+    }
+
+    public function subirVoucher(Request $request, MovimientoFinanciero $movimiento)
+    {
+        $request->validate([
+            'comprobante' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048'
+        ], [
+            'comprobante.required' => 'Debe adjuntar un archivo válido como voucher.',
+            'comprobante.mimes' => 'El voucher debe ser una imagen (JPG, PNG) o un PDF.',
+            'comprobante.max' => 'El voucher no debe pesar más de 2MB.'
+        ]);
+
+        // Verificar que el movimiento pertenece a un trámite del usuario logueado
+        if ($movimiento->tramite->user_id !== Auth::id()) {
+            abort(403, 'No tiene permiso para modificar este registro.');
+        }
+
+        if ($request->hasFile('comprobante')) {
+            $path = $request->file('comprobante')->store('comprobantes', 'public');
+            
+            $movimiento->update([
+                'comprobante_path' => $path
+            ]);
+            
+            // Opcional: Registrar un movimiento en el historial
+            TramiteMovimiento::create([
+                'tramite_id' => $movimiento->tramite_id,
+                'user_id' => Auth::id(),
+                'estado_anterior' => $movimiento->tramite->estado,
+                'estado_nuevo' => $movimiento->tramite->estado,
+                'comentarios' => 'El usuario ha subido su comprobante de pago para el concepto: ' . $movimiento->categoria,
+                'fecha_movimiento' => now()
+            ]);
+        }
+
+        return back()->with('success', 'Voucher subido exitosamente. El área de Finanzas validará su pago a la brevedad para continuar con su trámite.');
     }
 
     public function seguimiento(Request $request)

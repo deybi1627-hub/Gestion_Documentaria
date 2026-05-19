@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function() {
     Route::get('/tramites/crear', [TramiteController::class, 'create'])->name('tramites.create');
     Route::post('/tramites', [TramiteController::class, 'store'])->name('tramites.store');
     Route::get('/tramites/{tramite}', [TramiteController::class, 'show'])->name('tramites.show');
+    Route::post('/tramites/movimiento/{movimiento}/voucher', [TramiteController::class, 'subirVoucher'])->name('tramites.voucher');
 
     // === GESTIÓN DOCUMENTARIA ===
     Route::get('/documentos/nuevo', [DocumentoController::class, 'create'])->name('documentos.create');

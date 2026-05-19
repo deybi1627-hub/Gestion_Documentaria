@@ -14,7 +14,8 @@
             </a>
          </li>
 
-         <!-- Botón Publicar (Estilo Natural) -->
+         <!-- Botón Publicar (Estilo Natural) - Solo Admin -->
+         @can('admin-tramites')
          <li>
             <a href="{{ route('documentos.create') }}" class="flex items-center p-3 text-brand-100 rounded-xl hover:bg-brand-800 group transition-all {{ request()->routeIs('documentos.create') ? 'bg-brand-800 text-white' : '' }}">
                <svg class="w-5 h-5 transition duration-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,9 +24,19 @@
                <span class="ms-3">Publicar Documento</span>
             </a>
          </li>
+         @endcan
 
          <li>
-            <a href="{{ route('tramites.index') }}" class="flex items-center p-3 text-brand-100 rounded-xl hover:bg-brand-800 group transition-all {{ request()->routeIs('tramites.*') && !request()->routeIs('admin.*') ? 'bg-brand-800 text-white' : '' }}">
+            <a href="{{ route('tramites.create') }}" class="flex items-center p-3 text-brand-100 rounded-xl hover:bg-brand-800 group transition-all {{ request()->routeIs('tramites.create') ? 'bg-brand-800 text-white' : '' }}">
+               <svg class="w-5 h-5 transition duration-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+               </svg>
+               <span class="ms-3">Nuevo Trámite</span>
+            </a>
+         </li>
+
+         <li>
+            <a href="{{ route('tramites.index') }}" class="flex items-center p-3 text-brand-100 rounded-xl hover:bg-brand-800 group transition-all {{ request()->routeIs('tramites.index') || request()->routeIs('tramites.show') ? 'bg-brand-800 text-white' : '' }}">
                <svg class="w-5 h-5 transition duration-75" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                </svg>

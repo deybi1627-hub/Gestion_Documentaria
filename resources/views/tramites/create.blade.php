@@ -64,10 +64,10 @@
                         <label for="documentos" class="block text-sm font-medium text-gray-700 mb-2">
                             Adjuntar documentos adicionales
                         </label>
-                        <input type="file" id="documentos" name="documentos[]" multiple
+                        <input type="file" id="documentos" name="documentos[]" multiple required
                                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                               accept=".pdf,.jpg,.jpeg,.png">
-                        <p class="text-sm text-gray-500 mt-1">Formatos permitidos: PDF, JPG, PNG. Máximo 2MB por archivo.</p>
+                               accept=".pdf">
+                        <p class="text-sm text-gray-500 mt-1">Requerido. Formatos permitidos: Solo PDF. Máximo 2MB por archivo.</p>
                     </div>
 
                     <!-- Resumen y envío -->

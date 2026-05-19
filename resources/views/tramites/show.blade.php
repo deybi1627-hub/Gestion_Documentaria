@@ -174,7 +174,7 @@
                                 <p class="text-sm font-medium text-gray-900">{{ $movimiento->descripcion }}</p>
                                 <p class="text-xs text-gray-500">{{ $movimiento->fecha_transaccion->format('d/m/Y') }}</p>
                             </div>
-                            <div class="text-right">
+                            <div class="text-right flex flex-col items-end gap-2">
                                 <p class="text-sm font-medium text-gray-900">S/ {{ number_format($movimiento->monto, 2) }}</p>
                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
                                     @if($movimiento->estado === 'pagado') bg-green-100 text-green-800
@@ -183,6 +183,22 @@
                                 </span>
                             </div>
                         </div>
+                        @if($movimiento->estado === 'pendiente' && !$movimiento->comprobante_path)
+                        <div class="mt-2 p-3 bg-blue-50 rounded-md border border-blue-100">
+                            <p class="text-xs text-blue-800 font-medium mb-2">Debe abonar el monto y subir su voucher para continuar con el trámite.</p>
+                            <form action="{{ route('tramites.voucher', $movimiento) }}" method="POST" enctype="multipart/form-data" class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                                @csrf
+                                <input type="file" name="comprobante" accept=".pdf,.jpg,.jpeg,.png" required class="block w-full text-xs text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+                                <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 whitespace-nowrap shadow-sm">Subir Voucher</button>
+                            </form>
+                            <x-input-error :messages="$errors->get('comprobante')" class="mt-2" />
+                        </div>
+                        @elseif($movimiento->estado === 'pendiente' && $movimiento->comprobante_path)
+                        <div class="mt-2 p-3 bg-green-50 rounded-md border border-green-100 flex justify-between items-center">
+                            <p class="text-xs text-green-800 font-medium">Voucher subido. Esperando validación de caja.</p>
+                            <a href="{{ Storage::url($movimiento->comprobante_path) }}" target="_blank" class="text-xs text-green-700 hover:underline font-bold">Ver voucher</a>
+                        </div>
+                        @endif
                         @endforeach
                     </div>
                 </div>
