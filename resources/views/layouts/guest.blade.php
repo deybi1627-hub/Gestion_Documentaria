@@ -19,7 +19,8 @@
     <div class="min-h-screen flex">
         
         <!-- Lado Izquierdo (Branding / Visual) -->
-        <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#002147] via-[#003366] to-[#00509d] relative overflow-hidden items-center justify-center p-12">
+        <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-12"
+            style="background: linear-gradient(to bottom right, rgba(0,33,71,0.88), rgba(0,51,102,0.82), rgba(0,80,157,0.80)), url('{{ asset('img/pedagogico.jpeg') }}') center/cover no-repeat;">
             <!-- Círculos decorativos -->
             <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-red-600 rounded-full blur-[120px] opacity-20 -translate-x-1/2 -translate-y-1/2"></div>
             <div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-400 rounded-full blur-[150px] opacity-20 translate-x-1/3 translate-y-1/3"></div>

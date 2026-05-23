@@ -146,31 +146,21 @@ class TramiteController extends Controller
         return back()->with('success', 'Voucher subido exitosamente. El área de Finanzas validará su pago a la brevedad para continuar con su trámite.');
     }
 
-    public function seguimiento(Request $request)
-    {
-        $request->validate([
-            'search' => 'required|string|min:3'
-        ]);
-
-        $search = $request->search;
-
-        $tramite = Tramite::where('numero_expediente', 'like', "%{$search}%")
-                         ->orWhereHas('user', function($query) use ($search) {
-                             $query->where('name', 'like', "%{$search}%");
-                         })
-                         ->first();
-
-        if (!$tramite) {
-            return back()->with('error', 'No se encontró ningún trámite con esos datos. Verifique su número de expediente o nombre.');
-        }
-
-        return view('tramites.seguimiento', compact('tramite'));
-    }
-
     // Métodos para administradores/secretarios
     public function adminIndex(Request $request)
     {
         $query = Tramite::with(['user', 'procedimientoTupa']);
+
+        // ===== PUNTO 5: Búsqueda rápida =====
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('numero_expediente', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($q2) use ($search) {
+                      $q2->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
 
         // Filtros
         if ($request->estado) {

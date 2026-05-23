@@ -26,9 +26,6 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </a>
-                            <a href="{{ route('seguimiento.form') }}" class="px-8 py-4 bg-slate-50 text-slate-700 rounded-2xl font-bold text-lg hover:bg-slate-100 transition-all flex items-center justify-center border border-slate-200">
-                                Seguimiento de Trámites
-                            </a>
                         </div>
                     </div>
                     <div class="mt-20 lg:mt-0 relative">

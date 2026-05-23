@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Storage;
 
 class DocumentoController extends Controller
 {
-    // SE ELIMINÓ EL CONSTRUCTOR QUE CAUSABA EL ERROR
-    // LA SEGURIDAD SE MANEJA AHORA DESDE EL ARCHIVO ROUTES/WEB.PHP
-
+    
     public function index(Request $request)
     {
         if (auth()->check()) {

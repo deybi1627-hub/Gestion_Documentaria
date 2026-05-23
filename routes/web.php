@@ -13,13 +13,6 @@ Route::get('/', [DocumentoController::class, 'index'])->name('welcome');
 Route::get('/portal-documentos', [DocumentoController::class, 'portal'])->name('documentos.portal');
 Route::get('/documentos', [DocumentoController::class, 'index'])->name('documentos.index');
 
-// 2. SEGUIMIENTO PÚBLICO: Consulta de trámites por ciudadanos
-Route::get('/seguimiento', function () {
-    return view('seguimiento');
-})->name('seguimiento.form');
-
-Route::post('/seguimiento', [TramiteController::class, 'seguimiento'])->name('seguimiento.buscar');
-
 // 3. DASHBOARD: La pantalla a la que entras al loguearte
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 

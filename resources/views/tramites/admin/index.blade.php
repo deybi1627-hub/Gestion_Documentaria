@@ -24,7 +24,7 @@
             <!-- Filtros -->
             <div class="bg-white shadow-sm sm:rounded-2xl border border-slate-100 overflow-hidden">
                 <div class="p-6">
-                    <form method="GET" action="{{ route('admin.tramites.index') }}" class="grid gap-4 md:grid-cols-4 items-end">
+                    <form method="GET" action="{{ route('admin.tramites.index') }}" class="grid gap-4 md:grid-cols-5 items-end">
                         <div>
                             <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">{{ __('Estado') }}</label>
                             <select name="estado" class="block w-full rounded-xl border-slate-200 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm bg-slate-50 font-bold text-slate-700">
@@ -35,6 +35,10 @@
                                 <option value="Rechazado" {{ request('estado') == 'Rechazado' ? 'selected' : '' }}>Rechazado</option>
                                 <option value="Finalizado" {{ request('estado') == 'Finalizado' ? 'selected' : '' }}>Finalizado</option>
                             </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">{{ __('Buscar') }}</label>
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Expediente o Nombre..." class="block w-full rounded-xl border-slate-200 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm bg-slate-50 font-bold text-slate-700 placeholder:font-normal placeholder:text-slate-400">
                         </div>
                         <div>
                             <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">{{ __('Desde') }}</label>

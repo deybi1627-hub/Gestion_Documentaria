@@ -19,34 +19,54 @@ class DashboardController extends Controller
         // Determinar si es administrador
         $isAdmin = in_array($user->role, ['admin', 'secre']);
 
-        // Conteos para los estadísticos
+        // ===== PUNTO 3: Conteos correctos según rol =====
         if ($isAdmin) {
             $counts = [
-                'activos' => Tramite::whereIn('estado', ['Recibido', 'En Revisión'])->count(),
+                'activos'     => Tramite::whereIn('estado', ['Recibido', 'En Revisión'])->count(),
                 'completados' => Tramite::whereIn('estado', ['Aprobado', 'Finalizado'])->count(),
-                'vencidos' => Tramite::where('fecha_limite', '<', now())
-                    ->whereNotIn('estado', ['Finalizado', 'Aprobado', 'Rechazado'])
-                    ->count(),
-                'archivos' => Archivo::count(),
+                'vencidos'    => Tramite::where('fecha_limite', '<', now())
+                                    ->whereNotIn('estado', ['Finalizado', 'Aprobado', 'Rechazado'])
+                                    ->count(),
+                'archivos'    => Archivo::count(),
+                // Punto 6: conteos para módulos admin
+                'total_tramites' => Tramite::count(),
+                'finanzas_pendientes' => Tramite::whereIn('estado', ['Recibido', 'En Revisión'])->count(),
             ];
+
+            // ===== PUNTO 3: Admin ve los últimos tramites del SISTEMA (todos los usuarios) =====
+            $misTramites = Tramite::with(['procedimientoTupa', 'user'])
+                ->latest()
+                ->take(8)
+                ->get();
+
+            // ===== PUNTO 7: Actividad reciente del sistema =====
+            $actividadReciente = Tramite::with('user')
+                ->latest()
+                ->take(8)
+                ->get();
+
         } else {
             $counts = [
-                'activos' => $user->tramites()->whereIn('estado', ['Recibido', 'En Revisión'])->count(),
+                'activos'     => $user->tramites()->whereIn('estado', ['Recibido', 'En Revisión'])->count(),
                 'completados' => $user->tramites()->whereIn('estado', ['Aprobado', 'Finalizado'])->count(),
-                'vencidos' => $user->tramites()->where('fecha_limite', '<', now())
-                    ->whereNotIn('estado', ['Finalizado', 'Aprobado', 'Rechazado'])
-                    ->count(),
-                'archivos' => 0, // Los usuarios normales no tienen archivos físicos que contabilizar
+                'vencidos'    => $user->tramites()->where('fecha_limite', '<', now())
+                                    ->whereNotIn('estado', ['Finalizado', 'Aprobado', 'Rechazado'])
+                                    ->count(),
+                'archivos'    => 0,
+                'total_tramites' => 0,
+                'finanzas_pendientes' => 0,
             ];
+
+            // Usuarios normales ven solo sus trámites
+            $misTramites = $user->tramites()
+                ->with('procedimientoTupa')
+                ->latest()
+                ->take(5)
+                ->get();
+
+            $actividadReciente = collect();
         }
 
-        // Últimos trámites del usuario
-        $misTramites = $user->tramites()
-            ->with('procedimientoTupa')
-            ->latest()
-            ->take(5)
-            ->get();
-
-        return view('dashboard', compact('counts', 'misTramites'));
+        return view('dashboard', compact('counts', 'misTramites', 'actividadReciente', 'isAdmin'));
     }
 }

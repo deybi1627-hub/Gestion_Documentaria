@@ -19,7 +19,6 @@
         <nav class="hidden lg:flex gap-8 text-sm font-bold text-slate-700 items-center">
             <a href="{{ url('/') }}" class="hover:text-red-600 transition tracking-tighter uppercase">INICIO</a>
             <a href="{{ route('documentos.portal') }}" class="hover:text-red-600 transition tracking-tighter uppercase">DOCUMENTOS</a>
-            <a href="{{ route('seguimiento.form') }}" class="hover:text-red-600 transition tracking-tighter uppercase">SEGUIMIENTO</a>
             <a href="https://teams.microsoft.com" target="_blank" class="hover:text-red-600 transition tracking-tighter uppercase font-black">PLATAFORMA EVA</a>
             
             @auth
