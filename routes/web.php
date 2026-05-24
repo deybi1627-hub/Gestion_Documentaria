@@ -25,6 +25,10 @@ Route::middleware('auth')->group(function() {
     Route::post('/tramites', [TramiteController::class, 'store'])->name('tramites.store');
     Route::get('/tramites/{tramite}', [TramiteController::class, 'show'])->name('tramites.show');
     Route::post('/tramites/movimiento/{movimiento}/voucher', [TramiteController::class, 'subirVoucher'])->name('tramites.voucher');
+    // Bloque 1: Descarga segura de documentos adjuntos a un trámite
+    Route::get('/tramites/{tramite}/documentos/{documento}/descargar', [TramiteController::class, 'descargarDocumento'])->name('tramites.documento.descargar');
+    // Bloque 4: API para obtener requisitos de un TUPA (formulario dinámico)
+    Route::get('/api/tupa/{procedimientoTupa}/requisitos', [TramiteController::class, 'requisitosApi'])->name('tupa.requisitos');
 
     // === GESTIÓN DOCUMENTARIA ===
     Route::get('/documentos/nuevo', [DocumentoController::class, 'create'])->name('documentos.create');
@@ -36,10 +40,12 @@ Route::middleware('auth')->group(function() {
         Route::get('/', [MovimientoFinancieroController::class, 'index'])->name('index');
         Route::get('/crear', [MovimientoFinancieroController::class, 'create'])->name('create');
         Route::post('/', [MovimientoFinancieroController::class, 'store'])->name('store');
+        Route::get('/reporte', [MovimientoFinancieroController::class, 'reporte'])->name('reporte');
         Route::get('/{movimiento}', [MovimientoFinancieroController::class, 'show'])->name('show');
         Route::get('/{movimiento}/editar', [MovimientoFinancieroController::class, 'edit'])->name('edit');
         Route::put('/{movimiento}', [MovimientoFinancieroController::class, 'update'])->name('update');
-        Route::get('/reporte', [MovimientoFinancieroController::class, 'reporte'])->name('reporte');
+        // Bloque 1: Descarga segura de comprobantes
+        Route::get('/{movimiento}/comprobante', [MovimientoFinancieroController::class, 'descargarComprobante'])->name('comprobante.descargar');
     });
 
     // === ARCHIVO ===

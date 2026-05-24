@@ -18,7 +18,10 @@ class MovimientoFinanciero extends Model
         'descripcion',
         'comprobante_path',
         'estado',
-        'fecha_transaccion'
+        'fecha_transaccion',
+        'aprobado_por',
+        'fecha_aprobacion',
+        'notas_internas',
     ];
 
     protected $casts = [
@@ -30,6 +33,12 @@ class MovimientoFinanciero extends Model
     public function tramite(): BelongsTo
     {
         return $this->belongsTo(Tramite::class);
+    }
+
+    /** Auditoría: quien aprobó o rechazó el pago */
+    public function aprobador(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'aprobado_por');
     }
 
     // Scopes

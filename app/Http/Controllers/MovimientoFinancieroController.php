@@ -4,16 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\MovimientoFinanciero;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Models\MovimientoFinanciero;
 
 class MovimientoFinancieroController extends Controller
 {
     public function index(Request $request)
     {
-        $query = MovimientoFinanciero::with(['tramite.procedimientoTupa']);
+        $query = MovimientoFinanciero::with(['tramite.procedimientoTupa', 'aprobador']);
 
-        // Filtros
         if ($request->tipo) {
             $query->where('tipo', $request->tipo);
         }
@@ -32,12 +33,12 @@ class MovimientoFinancieroController extends Controller
 
         $movimientos = $query->orderBy('fecha_transaccion', 'desc')->paginate(20);
 
-        // Calcular resumen financiero
+        // Resumen financiero
         $resumen = [
             'total_ingresos' => MovimientoFinanciero::ingresos()->pagados()->sum('monto'),
-            'total_egresos' => MovimientoFinanciero::egresos()->pagados()->sum('monto'),
-            'saldo' => 0,
-            'pendientes' => MovimientoFinanciero::where('estado', 'pendiente')->sum('monto')
+            'total_egresos'  => MovimientoFinanciero::egresos()->pagados()->sum('monto'),
+            'saldo'          => 0,
+            'pendientes'     => MovimientoFinanciero::where('estado', 'pendiente')->sum('monto'),
         ];
         $resumen['saldo'] = $resumen['total_ingresos'] - $resumen['total_egresos'];
 
@@ -49,31 +50,42 @@ class MovimientoFinancieroController extends Controller
         return view('finanzas.create');
     }
 
+    /**
+     * Bloque 3: Protección contra Mass Assignment.
+     * Se usa $request->only([...]) en lugar de $request->all(),
+     * por lo que aunque alguien inyecte 'estado=pagado' o 'aprobado_por=1',
+     * estos campos serán ignorados al crear el movimiento.
+     */
     public function store(Request $request)
     {
         $request->validate([
-            'tipo' => 'required|in:ingreso,egreso',
-            'categoria' => 'required|string|max:255',
-            'monto' => 'required|numeric|min:0',
-            'descripcion' => 'required|string|max:500',
-            'estado' => 'required|in:pendiente,pagado,cancelado',
+            'tipo'              => 'required|in:ingreso,egreso',
+            'categoria'         => 'required|string|max:255',
+            'monto'             => 'required|numeric|min:0',
+            'descripcion'       => 'required|string|max:500',
+            'estado'            => 'required|in:pendiente,pagado,cancelado',
             'fecha_transaccion' => 'required|date',
-            'comprobante' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048'
+            'comprobante'       => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->all();
+        // Solo se permite guardar exactamente estos campos — ninguno más
+        $data = $request->only([
+            'tipo', 'categoria', 'monto', 'descripcion', 'estado', 'fecha_transaccion',
+        ]);
 
         if ($request->hasFile('comprobante')) {
-            $data['comprobante_path'] = $request->file('comprobante')->store('comprobantes', 'public');
+            // Comprobantes también en disco privado
+            $data['comprobante_path'] = $request->file('comprobante')->store('comprobantes/manuales', 'local');
         }
 
         MovimientoFinanciero::create($data);
 
-        return redirect()->route('finanzas.index')->with('success', 'Movimiento financiero registrado');
+        return redirect()->route('finanzas.index')->with('success', 'Movimiento financiero registrado correctamente.');
     }
 
     public function show(MovimientoFinanciero $movimiento)
     {
+        $movimiento->load(['tramite.user', 'aprobador']);
         return view('finanzas.show', compact('movimiento'));
     }
 
@@ -82,22 +94,50 @@ class MovimientoFinancieroController extends Controller
         return view('finanzas.edit', compact('movimiento'));
     }
 
+    /**
+     * Bloque 3: Al aprobar/rechazar un pago, se registra quién lo hizo y cuándo.
+     * Solo se permite cambiar 'estado' y añadir 'notas_internas'.
+     */
     public function update(Request $request, MovimientoFinanciero $movimiento)
     {
         $request->validate([
-            'estado' => 'required|in:pendiente,pagado,cancelado',
-            'comprobante' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048'
+            'estado'         => 'required|in:pendiente,pagado,cancelado',
+            'notas_internas' => 'nullable|string|max:500',
+            'comprobante'    => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->only(['estado']);
+        DB::transaction(function () use ($request, $movimiento) {
+            $data = [
+                'estado'          => $request->estado,
+                'notas_internas'  => $request->notas_internas,
+                // Auditoría: registra quién aprobó y cuándo
+                'aprobado_por'    => Auth::id(),
+                'fecha_aprobacion'=> now(),
+            ];
 
-        if ($request->hasFile('comprobante')) {
-            $data['comprobante_path'] = $request->file('comprobante')->store('comprobantes', 'public');
+            if ($request->hasFile('comprobante')) {
+                $data['comprobante_path'] = $request->file('comprobante')->store(
+                    "comprobantes/{$movimiento->tramite_id}",
+                    'local'
+                );
+            }
+
+            $movimiento->update($data);
+        });
+
+        return redirect()->route('finanzas.index')->with('success', 'Movimiento actualizado y auditoría registrada.');
+    }
+
+    /**
+     * Descarga segura del comprobante (disco privado).
+     */
+    public function descargarComprobante(MovimientoFinanciero $movimiento)
+    {
+        if (!$movimiento->comprobante_path || !Storage::disk('local')->exists($movimiento->comprobante_path)) {
+            abort(404, 'Comprobante no disponible.');
         }
 
-        $movimiento->update($data);
-
-        return redirect()->route('finanzas.index')->with('success', 'Movimiento actualizado');
+        return Storage::disk('local')->download($movimiento->comprobante_path);
     }
 
     public function reporte(Request $request)
@@ -105,15 +145,16 @@ class MovimientoFinancieroController extends Controller
         $fechaDesde = $request->fecha_desde ?? now()->startOfMonth();
         $fechaHasta = $request->fecha_hasta ?? now()->endOfMonth();
 
-        $movimientos = MovimientoFinanciero::whereBetween('fecha_transaccion', [$fechaDesde, $fechaHasta])
+        $movimientos = MovimientoFinanciero::with(['tramite.user', 'aprobador'])
+                                          ->whereBetween('fecha_transaccion', [$fechaDesde, $fechaHasta])
                                           ->orderBy('fecha_transaccion')
                                           ->get();
 
         $resumen = [
-            'ingresos' => $movimientos->where('tipo', 'ingreso')->where('estado', 'pagado')->sum('monto'),
-            'egresos' => $movimientos->where('tipo', 'egreso')->where('estado', 'pagado')->sum('monto'),
+            'ingresos'   => $movimientos->where('tipo', 'ingreso')->where('estado', 'pagado')->sum('monto'),
+            'egresos'    => $movimientos->where('tipo', 'egreso')->where('estado', 'pagado')->sum('monto'),
             'pendientes' => $movimientos->where('estado', 'pendiente')->sum('monto'),
-            'periodo' => $fechaDesde->format('d/m/Y') . ' - ' . $fechaHasta->format('d/m/Y')
+            'periodo'    => \Carbon\Carbon::parse($fechaDesde)->format('d/m/Y') . ' - ' . \Carbon\Carbon::parse($fechaHasta)->format('d/m/Y'),
         ];
         $resumen['saldo'] = $resumen['ingresos'] - $resumen['egresos'];
 
