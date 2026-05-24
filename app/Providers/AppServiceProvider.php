@@ -5,7 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator; // Añadimos esto para el diseño de paginación
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\URL; // Requerido para forzar el esquema HTTPS
 use App\Models\User;
 
 class AppServiceProvider extends ServiceProvider
@@ -35,5 +35,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('admin-tramites', function (User $user) {
             return in_array($user->role, ['admin', 'secre']);
         });
+
+        // 4. Forzar HTTPS en producción (Railway) para corregir la carga de estilos de Vite
+        if (config('app.env') === 'production' || isset($_SERVER['HTTPS'])) {
+            URL::forceScheme('https');
+        }
     }
 }
