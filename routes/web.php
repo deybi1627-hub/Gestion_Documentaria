@@ -7,6 +7,29 @@ use App\Http\Controllers\MovimientoFinancieroController;
 use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+
+// =========================================================================
+// RUTA DE EMERGENCIA: Limpieza de caché en producción (Railway)
+// =========================================================================
+Route::get('/limpiar-todo', function () {
+    try {
+        Artisan::call('route:clear');
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
+        Artisan::call('view:clear');
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => '¡Toda la caché del sistema ha sido eliminada con éxito en Railway!'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Hubo un error al limpiar la caché: ' . $e->getMessage()
+        ], 500);
+    }
+});
 
 // =========================================================================
 // 1. RUTAS PÚBLICAS: El portal principal (Sin autenticación)
