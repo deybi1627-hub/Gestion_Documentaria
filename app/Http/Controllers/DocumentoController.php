@@ -8,14 +8,12 @@ use Illuminate\Support\Facades\Storage;
 
 class DocumentoController extends Controller
 {
-    
     public function index(Request $request)
     {
         if (auth()->check()) {
             return redirect()->route('dashboard');
         }
 
-        // Para la landing, solo mostramos los últimos 3
         $documentos = Documento::latest('fecha_publicacion')->take(3)->get();
         $totalDocumentos = Documento::count();
         
@@ -67,21 +65,36 @@ class DocumentoController extends Controller
     }
 
     /**
+     * NUEVO MÉTODO: Visualiza el archivo del portal de forma segura en internet.
+     * Evita los problemas del enlace simbólico roto en servidores como Railway.
+     */
+    public function verArchivo(Documento $documento)
+    {
+        if (!Storage::disk('public')->exists($documento->archivo_path)) {
+            abort(404, 'El archivo solicitado no existe en el servidor.');
+        }
+
+        $rutaAbsoluta = Storage::disk('public')->path($documento->archivo_path);
+
+        return response()->file($rutaAbsoluta, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $documento->titulo . '"'
+        ]);
+    }
+
+    /**
      * Elimina el documento de la base de datos y el archivo físico.
      */
     public function destroy(Documento $documento)
     {
-        // Seguridad por Rol: Solo el administrador puede borrar
         if (auth()->user()->role !== 'admin') {
             return redirect()->route('documentos.index')->with('error', 'No tienes permisos para eliminar documentos.');
         }
 
-        // 1. Borrar el archivo físico del disco público
         if ($documento->archivo_path && Storage::disk('public')->exists($documento->archivo_path)) {
             Storage::disk('public')->delete($documento->archivo_path);
         }
 
-        // 2. Borrar el registro en la base de datos
         $documento->delete();
 
         return redirect()->route('documentos.index')->with('success', 'Documento eliminado correctamente.');

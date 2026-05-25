@@ -11,6 +11,8 @@ return [
     | by the framework. The "local" disk, as well as a variety of cloud
     | based disks are available to your application for file storage.
     |
+    | Tip: En Railway se mantiene 'local' por defecto para los flujos internos.
+    |
     */
 
     'default' => env('FILESYSTEM_DISK', 'local'),
@@ -32,7 +34,7 @@ return [
 
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app/private'),
+            'root' => storage_path('app'), // 👈 Corregido para compatibilidad con tus rutas "tramites/{id}"
             'serve' => true,
             'throw' => false,
             'report' => false,

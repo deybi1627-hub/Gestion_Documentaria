@@ -1,6 +1,5 @@
 <x-public-layout title="Portal de Trámites - Victorino Elorz">
 
-        <!-- Hero Section -->
         <section id="inicio" class="pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
@@ -29,7 +28,6 @@
                         </div>
                     </div>
                     <div class="mt-20 lg:mt-0 relative">
-                        <!-- Search Portal Preview -->
                         <div class="bg-brand-900 p-8 rounded-[2.5rem] shadow-2xl border-8 border-brand-800/50">
                             <div class="mb-6">
                                 <h3 class="text-2xl font-black text-white mb-2">Buscador Oficial</h3>
@@ -56,14 +54,12 @@
                             </form>
                         </div>
                         
-                        <!-- Decorative element -->
                         <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl"></div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Documents Section -->
         <section id="documentos" class="py-24 bg-slate-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
@@ -109,7 +105,7 @@
                             </div>
 
                             <div class="flex items-center gap-3 w-full md:w-auto">
-                                <a href="{{ asset('storage/' . $doc->archivo_path) }}" target="_blank" class="flex-1 md:flex-none flex items-center justify-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold hover:bg-brand-600 transition-all shadow-lg text-sm uppercase tracking-tighter">
+                                <a href="{{ route('documentos.ver', $doc->id) }}" target="_blank" class="flex-1 md:flex-none flex items-center justify-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold hover:bg-brand-600 transition-all shadow-lg text-sm uppercase tracking-tighter">
                                     Ver Documento
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                 </a>
@@ -143,7 +139,6 @@
             </div>
         </section>
 
-        <!-- Stats Section -->
         <section class="py-24 bg-brand-900 relative overflow-hidden">
             <div class="absolute inset-0 opacity-10">
                 <div class="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
