@@ -8,34 +8,45 @@ use App\Http\Controllers\ArchivoController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
-// 1. RUTA PÚBLICA: El portal principal que todos ven
+// =========================================================================
+// 1. RUTAS PÚBLICAS: El portal principal (Sin autenticación)
+// =========================================================================
 Route::get('/', [DocumentoController::class, 'index'])->name('welcome');
 Route::get('/portal-documentos', [DocumentoController::class, 'portal'])->name('documentos.portal');
 Route::get('/documentos', [DocumentoController::class, 'index'])->name('documentos.index');
 
-// 3. DASHBOARD: La pantalla a la que entras al loguearte
+// Visualización segura de los PDFs públicos del portal general (Evita enlaces simbólicos rotos)
+Route::get('/portal-documentos/{documento}/ver', [DocumentoController::class, 'verArchivo'])->name('documentos.ver');
+
+// =========================================================================
+// 2. DASHBOARD: Pantalla de entrada post-login
+// =========================================================================
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
-// 4. RUTAS PROTEGIDAS: Solo usuarios logueados
+// =========================================================================
+// 3. RUTAS PROTEGIDAS: Solo usuarios logueados
+// =========================================================================
 Route::middleware('auth')->group(function() {
 
-    // === MESA DE PARTES - TRÁMITES ===
+    // === MESA DE PARTES / TRÁMITES (CIUDADANO) ===
     Route::get('/tramites', [TramiteController::class, 'index'])->name('tramites.index');
     Route::get('/tramites/crear', [TramiteController::class, 'create'])->name('tramites.create');
     Route::post('/tramites', [TramiteController::class, 'store'])->name('tramites.store');
     Route::get('/tramites/{tramite}', [TramiteController::class, 'show'])->name('tramites.show');
     Route::post('/tramites/movimiento/{movimiento}/voucher', [TramiteController::class, 'subirVoucher'])->name('tramites.voucher');
-    // Bloque 1: Descarga segura de documentos adjuntos a un trámite
-    Route::get('/tramites/{tramite}/documentos/{documento}/descargar', [TramiteController::class, 'descargarDocumento'])->name('tramites.documento.descargar');
-    // Bloque 4: API para obtener requisitos de un TUPA (formulario dinámico)
+    
+    // Descarga y visualización segura de documentos privados del trámite
+    Route::get('/tramites/documentos/{documento}/descargar', [TramiteController::class, 'descargarDocumento'])->name('tramites.documento.descargar');
+    
+    // API para los requisitos del TUPA (Formulario dinámico JavaScript)
     Route::get('/api/tupa/{procedimientoTupa}/requisitos', [TramiteController::class, 'requisitosApi'])->name('tupa.requisitos');
 
-    // === GESTIÓN DOCUMENTARIA ===
+    // === GESTIÓN DOCUMENTARIA GENERAL ===
     Route::get('/documentos/nuevo', [DocumentoController::class, 'create'])->name('documentos.create');
     Route::post('/documentos/guardar', [DocumentoController::class, 'store'])->name('documentos.store');
     Route::delete('/documentos/{documento}', [DocumentoController::class, 'destroy'])->name('documentos.destroy');
 
-    // === SISTEMA FINANCIERO ===
+    // === SISTEMA FINANCIERO (CAJA / TESORERÍA) ===
     Route::middleware('can:admin-tramites')->prefix('finanzas')->name('finanzas.')->group(function() {
         Route::get('/', [MovimientoFinancieroController::class, 'index'])->name('index');
         Route::get('/crear', [MovimientoFinancieroController::class, 'create'])->name('create');
@@ -44,11 +55,12 @@ Route::middleware('auth')->group(function() {
         Route::get('/{movimiento}', [MovimientoFinancieroController::class, 'show'])->name('show');
         Route::get('/{movimiento}/editar', [MovimientoFinancieroController::class, 'edit'])->name('edit');
         Route::put('/{movimiento}', [MovimientoFinancieroController::class, 'update'])->name('update');
-        // Bloque 1: Descarga segura de comprobantes
+        
+        // Descarga segura del voucher enviado por el usuario al área de finanzas
         Route::get('/{movimiento}/comprobante', [MovimientoFinancieroController::class, 'descargarComprobante'])->name('comprobante.descargar');
     });
 
-    // === ARCHIVO ===
+    // === ARCHIVO CENTRAL / HISTÓRICO ===
     Route::middleware('can:admin-tramites')->prefix('archivos')->name('archivos.')->group(function() {
         Route::get('/', [ArchivoController::class, 'index'])->name('index');
         Route::get('/crear', [ArchivoController::class, 'create'])->name('create');
@@ -61,7 +73,7 @@ Route::middleware('auth')->group(function() {
         Route::post('/{archivo}/destruir', [ArchivoController::class, 'destruir'])->name('destruir');
     });
 
-    // === ADMINISTRACIÓN DE TRÁMITES (Solo Admin/Secretario) ===
+    // === ADMINISTRACIÓN DE TRÁMITES (Solo Administradores / Evaluadores) ===
     Route::middleware('can:admin-tramites')->prefix('admin')->name('admin.')->group(function() {
         Route::get('/tramites', [TramiteController::class, 'adminIndex'])->name('tramites.index');
         Route::post('/tramites/{tramite}/cambiar-estado', [TramiteController::class, 'cambiarEstado'])->name('tramites.cambiar-estado');
@@ -71,6 +83,7 @@ Route::middleware('auth')->group(function() {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
 });
 
 require __DIR__.'/auth.php';

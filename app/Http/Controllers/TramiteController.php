@@ -122,26 +122,29 @@ class TramiteController extends Controller
     }
 
     /**
-     * Bloque 1: Descarga segura de documentos adjuntos a un trámite.
-     * Solo el dueño del trámite o un admin pueden descargar.
+     * Descarga o visualiza un documento del trámite de manera segura
+     * desde el disco de almacenamiento privado 'local'.
      */
-    public function descargarDocumento(Tramite $tramite, Documento $documento)
+    public function descargarDocumento($id)
     {
-        Gate::authorize('view', $tramite);
-
-        // Verificar que el documento pertenece a este trámite
-        if ($documento->tramite_id !== $tramite->id) {
-            abort(403, 'El documento no pertenece a este trámite.');
+        // 1. Buscar el documento o lanzar un error 404 si no existe
+        $documento = Documento::findOrFail($id);
+        
+        // 2. Obtener el trámite asociado para validar la seguridad
+        $tramite = $documento->tramite;
+        
+        // 3. Control de acceso: Solo el administrador o el dueño del trámite pueden verlo
+        if (auth()->user()->role !== 'admin' && auth()->id() !== $tramite->user_id) {
+            abort(403, 'No tienes autorización para visualizar este documento.');
         }
 
+        // 4. Verificar si el archivo físico realmente existe en el disco 'local'
         if (!Storage::disk('local')->exists($documento->archivo_path)) {
-            abort(404, 'El archivo no se encuentra disponible.');
+            abort(404, 'El archivo físico no se encuentra en el servidor.');
         }
 
-        return Storage::disk('local')->download(
-            $documento->archivo_path,
-            $documento->titulo
-        );
+        // 5. Retornar el archivo directamente al navegador (Muestra el PDF integrado)
+        return Storage::disk('local')->response($documento->archivo_path);
     }
 
     /**
@@ -163,7 +166,7 @@ class TramiteController extends Controller
         }
 
         DB::transaction(function () use ($request, $movimiento) {
-            // Bloque 1: guardar voucher en disco privado
+            // Bloque 1: guardar voucher en disco privado 'local'
             $path = $request->file('comprobante')->store(
                 "comprobantes/{$movimiento->tramite_id}",
                 'local'
@@ -183,10 +186,6 @@ class TramiteController extends Controller
 
         return back()->with('success', 'Voucher subido exitosamente. El área de Finanzas validará su pago a la brevedad para continuar con su trámite.');
     }
-
-    // =========================================================
-    // Métodos para administradores / secretarios
-    // =========================================================
 
     public function adminIndex(Request $request)
     {
@@ -217,10 +216,6 @@ class TramiteController extends Controller
         return view('tramites.admin.index', compact('tramites'));
     }
 
-    /**
-     * Cambia el estado del trámite y notifica al ciudadano por email.
-     * Bloque 5: Mail notification.
-     */
     public function cambiarEstado(Request $request, Tramite $tramite)
     {
         $request->validate([
@@ -249,7 +244,6 @@ class TramiteController extends Controller
             ]);
         });
 
-        // Bloque 5: Enviar email de notificación al ciudadano (en cola o de forma síncrona)
         try {
             $tramite->load('user');
             Mail::to($tramite->user->email)->queue(new EstadoTramiteActualizado($tramite, $estadoAnterior));
@@ -261,10 +255,6 @@ class TramiteController extends Controller
         return back()->with('success', 'Estado del trámite actualizado y ciudadano notificado.');
     }
 
-    /**
-     * Bloque 4: API endpoint — devuelve los requisitos de un TUPA en JSON
-     * para el formulario dinámico.
-     */
     public function requisitosApi(ProcedimientoTupa $procedimientoTupa)
     {
         return response()->json([

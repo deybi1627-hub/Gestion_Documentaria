@@ -8,7 +8,6 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            <!-- Información del Trámite -->
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
                     <div class="flex justify-between items-start mb-4">
@@ -65,26 +64,22 @@
                 </div>
             </div>
 
-            <!-- Descripción -->
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
                     <h4 class="text-md font-medium text-gray-900 mb-3">Descripción del Trámite</h4>
-                    <p class="text-gray-700">{{ $tramite->descripcion }}</p>
+                    <p class="text-gray-700 leading-relaxed">{{ $tramite->descripcion }}</p>
                 </div>
             </div>
 
-            <!-- Movimientos/Historial -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-100">
                 <div class="p-6">
                     <h4 class="text-lg font-bold text-gray-900 mb-6">Historial de Movimientos</h4>
                     <div class="relative">
-                        <!-- Linea vertical -->
                         <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-100"></div>
 
                         <div class="space-y-8 relative">
                             @forelse($tramite->movimientos as $movimiento)
                             <div class="flex items-start">
-                                <!-- Punto de la linea -->
                                 <div class="relative flex items-center justify-center">
                                     <div class="w-8 h-8 bg-brand-50 rounded-full border-2 border-white shadow-sm flex items-center justify-center z-10">
                                         <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,7 +129,6 @@
                 </div>
             </div>
 
-            <!-- Documentos Adjuntos -->
             @if($tramite->documentos->count() > 0)
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
@@ -151,9 +145,9 @@
                                     <p class="text-xs text-gray-500">{{ $documento->created_at->format('d/m/Y H:i') }}</p>
                                 </div>
                             </div>
-                            <a href="{{ Storage::url($documento->archivo_path) }}" target="_blank"
-                               class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                Ver
+                            <a href="{{ route('tramites.documento.descargar', $documento->id) }}" target="_blank"
+                               class="text-blue-600 hover:text-blue-800 text-sm font-medium bg-blue-50 px-3 py-1 rounded-md hover:bg-blue-100 transition-colors">
+                                Ver Documento
                             </a>
                         </div>
                         @endforeach
@@ -162,12 +156,11 @@
             </div>
             @endif
 
-            <!-- Información Financiera -->
             @if($tramite->movimientosFinancieros->count() > 0)
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
                     <h4 class="text-md font-medium text-gray-900 mb-4">Información Financiera</h4>
-                    <div class="space-y-2">
+                    <div class="space-y-4">
                         @foreach($tramite->movimientosFinancieros as $movimiento)
                         <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md">
                             <div>
@@ -183,6 +176,7 @@
                                 </span>
                             </div>
                         </div>
+                        
                         @if($movimiento->estado === 'pendiente' && !$movimiento->comprobante_path)
                         <div class="mt-2 p-3 bg-blue-50 rounded-md border border-blue-100">
                             <p class="text-xs text-blue-800 font-medium mb-2">Debe abonar el monto y subir su voucher para continuar con el trámite.</p>
@@ -196,7 +190,9 @@
                         @elseif($movimiento->estado === 'pendiente' && $movimiento->comprobante_path)
                         <div class="mt-2 p-3 bg-green-50 rounded-md border border-green-100 flex justify-between items-center">
                             <p class="text-xs text-green-800 font-medium">Voucher subido. Esperando validación de caja.</p>
-                            <a href="{{ Storage::url($movimiento->comprobante_path) }}" target="_blank" class="text-xs text-green-700 hover:underline font-bold">Ver voucher</a>
+                            <a href="{{ route('finanzas.comprobante.descargar', $movimiento) }}" target="_blank" class="text-xs text-green-700 hover:underline font-bold bg-green-100 px-2.5 py-1 rounded-md transition-colors hover:bg-green-200">
+                                Ver voucher adjunto
+                            </a>
                         </div>
                         @endif
                         @endforeach
