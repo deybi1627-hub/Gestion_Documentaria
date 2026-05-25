@@ -161,36 +161,36 @@
                 <div class="p-6">
                     <h4 class="text-md font-medium text-gray-900 mb-4">Información Financiera</h4>
                     <div class="space-y-4">
-                        @foreach($tramite->movimientosFinancieros as $movimiento)
+                        @foreach($tramite->movimientosFinancieros as $movimientoFinanciero)
                         <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md">
                             <div>
-                                <p class="text-sm font-medium text-gray-900">{{ $movimiento->descripcion }}</p>
-                                <p class="text-xs text-gray-500">{{ $movimiento->fecha_transaccion->format('d/m/Y') }}</p>
+                                <p class="text-sm font-medium text-gray-900">{{ $movimientoFinanciero->descripcion }}</p>
+                                <p class="text-xs text-gray-500">{{ $movimientoFinanciero->fecha_transaccion->format('d/m/Y') }}</p>
                             </div>
                             <div class="text-right flex flex-col items-end gap-2">
-                                <p class="text-sm font-medium text-gray-900">S/ {{ number_format($movimiento->monto, 2) }}</p>
+                                <p class="text-sm font-medium text-gray-900">S/ {{ number_format($movimientoFinanciero->monto, 2) }}</p>
                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                                    @if($movimiento->estado === 'pagado') bg-green-100 text-green-800
+                                    @if($movimientoFinanciero->estado === 'pagado') bg-green-100 text-green-800
                                     @else bg-yellow-100 text-yellow-800 @endif">
-                                    {{ $movimiento->estado }}
+                                    {{ $movimientoFinanciero->estado }}
                                 </span>
                             </div>
                         </div>
                         
-                        @if($movimiento->estado === 'pendiente' && !$movimiento->comprobante_path)
+                        @if($movimientoFinanciero->estado === 'pendiente' && !$movimientoFinanciero->comprobante_path)
                         <div class="mt-2 p-3 bg-blue-50 rounded-md border border-blue-100">
                             <p class="text-xs text-blue-800 font-medium mb-2">Debe abonar el monto y subir su voucher para continuar con el trámite.</p>
-                            <form action="{{ route('tramites.voucher', $movimiento) }}" method="POST" enctype="multipart/form-data" class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                            <form action="{{ route('tramites.voucher', $movimientoFinanciero->id) }}" method="POST" enctype="multipart/form-data" class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                                 @csrf
                                 <input type="file" name="comprobante" accept=".pdf,.jpg,.jpeg,.png" required class="block w-full text-xs text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
                                 <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 whitespace-nowrap shadow-sm">Subir Voucher</button>
                             </form>
                             <x-input-error :messages="$errors->get('comprobante')" class="mt-2" />
                         </div>
-                        @elseif($movimiento->estado === 'pendiente' && $movimiento->comprobante_path)
+                        @elseif($movimientoFinanciero->estado === 'pendiente' && $movimientoFinanciero->comprobante_path)
                         <div class="mt-2 p-3 bg-green-50 rounded-md border border-green-100 flex justify-between items-center">
                             <p class="text-xs text-green-800 font-medium">Voucher subido. Esperando validación de caja.</p>
-                            <a href="{{ route('finanzas.comprobante.descargar', $movimiento) }}" target="_blank" class="text-xs text-green-700 hover:underline font-bold bg-green-100 px-2.5 py-1 rounded-md transition-colors hover:bg-green-200">
+                            <a href="{{ route('finanzas.comprobante.descargar', $movimientoFinanciero->id) }}" target="_blank" class="text-xs text-green-700 hover:underline font-bold bg-green-100 px-2.5 py-1 rounded-md transition-colors hover:bg-green-200">
                                 Ver voucher adjunto
                             </a>
                         </div>
